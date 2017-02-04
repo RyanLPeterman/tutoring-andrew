@@ -1,6 +1,9 @@
 import pygame, sys
 from pygame.locals import *
 
+tic_tac = pygame.image.load("tic-tac.bmp")
+tic_tac_rect = tic_tac.get_rect()
+
 def main():
     # initialize pygame object
     pygame.init()
@@ -17,6 +20,8 @@ def main():
 
     # fill the screen with white
     display.fill(WHITE)
+    display.blit(tic_tac, tic_tac_rect)
+    pygame.display.flip()
 
     # draw the rectangle
     pygame.draw.rect(display , BLUE, (200,150,100,50))
