@@ -1,9 +1,9 @@
 import pygame, sys
 from pygame.locals import *
+from time import sleep
 
 # Number of frames per second
-# Change this value to speed up or slow down your game
-FPS = 900000000000
+FPS = 200
 
 #Global Variables to be used through our program
 WINDOWWIDTH = 1080
@@ -55,17 +55,24 @@ def moveBall(ball, ballDirX, ballDirY):
 
 #Checks for a collision with a wall, and 'bounces' ball off it.
 #Returns new direction
-def checkEdgeCollision(ball, ballDirX, ballDirY):
+def checkHitWall(ball, ballDirX, ballDirY):
+    isGameOver = False
+
     # if ball flies off top or bottom
     if ball.top <= (LINETHICKNESS) or ball.bottom >= (WINDOWHEIGHT - LINETHICKNESS):
         ballDirY = ballDirY * -1
+
     # if ball flies off left or right side
-    if ball.left <= (LINETHICKNESS) or ball.right >= (WINDOWWIDTH - LINETHICKNESS):
+    if ball.left <= (LINETHICKNESS):
+        isGameOver = True
+
+    if ball.right >= (WINDOWWIDTH - LINETHICKNESS):
         ballDirX = ballDirX * -1
-    return ballDirX, ballDirY
+
+    return ballDirX, ballDirY, isGameOver
 
 #Checks is the ball has hit a paddle, and 'bounces' ball off it.
-def checkHitBall(ball, paddle1, paddle2, ballDirX, ballDirY):
+def checkHitPaddle(ball, paddle1, paddle2, ballDirX, ballDirY):
     # if ball is going left and ball is on left paddle
     if ballDirX < 0 and paddle1.right >= ball.left and paddle1.left <= ball.right and paddle1.top <= ball.top and paddle1.bottom >= ball.bottom:
         paddle_mid = (paddle1.top + (PADDLESIZE/2))/2
@@ -73,6 +80,7 @@ def checkHitBall(ball, paddle1, paddle2, ballDirX, ballDirY):
         ball_mid = (ball.top + (LINETHICKNESS/2))/2
         ballDirY = ball_mid - paddle_mid
         return (-ballDirX, ballDirY)
+
     # if ball is going right and ball is on right paddle
     elif ballDirX > 0 and paddle2.left <= ball.right and paddle2.right >= ball.left and paddle2.top <= ball.top and paddle2.bottom >= ball.bottom:
         paddle_mid = (paddle2.top + (PADDLESIZE/2))/2
@@ -80,7 +88,7 @@ def checkHitBall(ball, paddle1, paddle2, ballDirX, ballDirY):
         ball_mid = (ball.top + (LINETHICKNESS/2))/2
         ballDirY = ball_mid - paddle_mid
         return (-ballDirX, ballDirY)
-        return (-ballDirX, ballDirY)
+
     else: 
         return (ballDirX, ballDirY)
 
@@ -90,6 +98,7 @@ def checkHitPowerup(ball, ballDirX, ballDirY, isPowerupAvailable):
     powerup_top = (WINDOWHEIGHT/2) - (POWERUP_SIZE/2)
     powerup_bottom = powerup_top + POWERUP_SIZE
 
+    # If powerup is available and the ball hits it
     if isPowerupAvailable and powerup_right >= ball.left and powerup_left <= ball.right and powerup_top <= ball.top and powerup_bottom >= ball.bottom:
         isPowerupAvailable = False
         ballDirX *=2
@@ -101,7 +110,7 @@ def checkHitPowerup(ball, ballDirX, ballDirY, isPowerupAvailable):
 def checkPointScored(paddle1, ball, score, ballDirX):
     #reset points if left wall is hit
     if ball.left <= LINETHICKNESS:
-        score = 0
+        score = score
     #1 point for hitting the ball
     elif ballDirX < 0 and paddle1.right >= ball.left and paddle1.left <= ball.right and paddle1.top <= ball.top and paddle1.bottom >= ball.bottom:
         score += 1
@@ -129,8 +138,28 @@ def displayScoreBoard(score):
     resultRect.topleft = (WINDOWWIDTH/2 - 50, 50)
     DISPLAYSURF.blit(resultSurf, resultRect)
 
+def drawGameOver(name, score):
+    DISPLAYSURF.fill((0,0,0))
+    pygame.display.update()
+
+    header = BASICFONT.render('Hi ' + name + ', Game over!', True, WHITE)
+    headerRect = header.get_rect(center=(WINDOWWIDTH/2, WINDOWHEIGHT/2))
+    DISPLAYSURF.blit(header, headerRect)
+
+    resultSurf = BASICFONT.render('Score:' + score, True, WHITE)
+    resultRect = resultSurf.get_rect(center=(WINDOWWIDTH/2, WINDOWHEIGHT/2 + 50))
+    DISPLAYSURF.blit(resultSurf, resultRect)
+
 #Main function
 def main():
+    print("Please Enter Your Name:")
+    name = input()
+
+    if name.lower() == "ethan eisenstein":
+        print(name + " sucks")
+    else:
+        print(name + " rocks")
+
     pygame.init()
     global DISPLAYSURF
     ##Font information
@@ -168,9 +197,13 @@ def main():
     pygame.mouse.set_visible(0) # make cursor invisible
 
     isPowerupAvailable = True
+    isGameOver = False
 
-    while True: #main game loop
+    while True:
         for event in pygame.event.get():
+            # gets all keys that are pressed
+            pressed = pygame.key.get_pressed()
+
             if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
@@ -178,29 +211,41 @@ def main():
             elif event.type == MOUSEMOTION:
                 mousex, mousey = event.pos
                 paddle1.y = mousey
+            elif pressed[pygame.K_w]:
 
-        drawArena()
-        drawPaddle(paddle1)
-        drawPaddle(paddle2)
-        drawBall(ball)
+                isGameOver = False
+                ball.x = WINDOWWIDTH/2 - LINETHICKNESS*4
+                ball.y = WINDOWHEIGHT/2 - LINETHICKNESS/2
 
-        if isPowerupAvailable:
-            drawPowerup()
+        if not isGameOver:
+            drawArena()
+            drawPaddle(paddle1)
+            drawPaddle(paddle2)
+            drawBall(ball)
 
-        ball = moveBall(ball, ballDirX, ballDirY)
-        ballDirX, ballDirY = checkEdgeCollision(ball, ballDirX, ballDirY)
-        score = checkPointScored(paddle1, ball, score, ballDirX)
-        ballDirX, ballDirY = checkHitBall(ball, paddle1, paddle2, ballDirX, ballDirY)
-        ballDirX, ballDirY, isPowerupAvailable = checkHitPowerup(ball, ballDirX, ballDirY, isPowerupAvailable)
+            if isPowerupAvailable:
+                drawPowerup()
 
-        # Andrew: uncomment this and comment the mouse elif statements on line 140-142 to switch to two perfect ai
-        # paddle1 = artificialIntelligence (ball, ballDirX, paddle1)
-        paddle2 = artificialIntelligence (ball, ballDirX, paddle2)
+            ball = moveBall(ball, ballDirX, ballDirY)
+            ballDirX, ballDirY, isGameOver = checkHitWall(ball, ballDirX, ballDirY)
+            score = checkPointScored(paddle1, ball, score, ballDirX)
+            ballDirX, ballDirY = checkHitPaddle(ball, paddle1, paddle2, ballDirX, ballDirY)
+            ballDirX, ballDirY, isPowerupAvailable = checkHitPowerup(ball, ballDirX, ballDirY, isPowerupAvailable)
 
-        displayScoreBoard(score)
+            # Andrew: uncomment this and comment the mouse elif statements on line 140-142 to switch to two perfect ai
+            # paddle1 = artificialIntelligence (ball, ballDirX, paddle1)
+            paddle2 = artificialIntelligence (ball, ballDirX, paddle2)
+
+            displayScoreBoard(score)
+        else:
+            drawGameOver(name, str(score))
 
         pygame.display.update()
         FPSCLOCK.tick(FPS)
 
+    pygame.quit()
+    sys.exit()
+
+# if you're running this script from the command line
 if __name__=='__main__':
     main()
