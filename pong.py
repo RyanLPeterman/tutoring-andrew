@@ -11,7 +11,7 @@ WINDOW_HEIGHT = 720
 LINE_THICKNESS = 10
 PADDLE_SIZE = 100
 PADDLE_OFFSET = 50
-POWERUP_SIZE = 50
+POWERUP_SIZE = 100
 
 # Set up the colours
 BLACK = (0  ,0  ,0  )
@@ -42,10 +42,14 @@ def drawBall(ball):
     pygame.draw.rect(DISPLAYSURF, WHITE, ball)
 
 def drawPowerup():
-    # creating a rectangle
-    powerup = pygame.Rect((WINDOW_WIDTH/2) - (POWERUP_SIZE/2),(WINDOW_HEIGHT/2) - (POWERUP_SIZE/2), POWERUP_SIZE,POWERUP_SIZE)
-    # draw powerup
-    pygame.draw.rect(DISPLAYSURF, RED, powerup)
+    # load img
+    picture = pygame.image.load("Rasberry.png")
+    picture = pygame.transform.scale(picture, (POWERUP_SIZE, POWERUP_SIZE))
+    rect = picture.get_rect()
+    
+    # center rect and draw
+    rect = rect.move((WINDOW_WIDTH/2 - POWERUP_SIZE/2, WINDOW_HEIGHT/2 - POWERUP_SIZE/2))
+    DISPLAYSURF.blit(picture, rect)
 
 #moves the ball returns new position
 def moveBall(ball, ballDirX, ballDirY):
@@ -178,7 +182,7 @@ def main():
 
     # Initiate variable and set starting positions
     # any future changes made within rectangles
-    ballX = WINDOW_WIDTH/2 - LINE_THICKNESS*4
+    ballX = WINDOW_WIDTH/2 - LINE_THICKNESS*7
     ballY = WINDOW_HEIGHT/2 - LINE_THICKNESS/2
     playerOnePosition = (WINDOW_HEIGHT - PADDLE_SIZE) /2
     playerTwoPosition = (WINDOW_HEIGHT - PADDLE_SIZE) /2
@@ -218,7 +222,7 @@ def main():
                 paddle1.y = mousey
             elif pressed[pygame.K_SPACE]:
                 isGameOver = False
-                ball.x = WINDOW_WIDTH/2 - LINE_THICKNESS*4
+                ball.x = WINDOW_WIDTH/2 - LINE_THICKNESS*7
                 ball.y = WINDOW_HEIGHT/2 - LINE_THICKNESS/2
                 score = 0
 
