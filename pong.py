@@ -82,24 +82,20 @@ def checkHitWall(ball, ballDirX, ballDirY):
 
 #Checks is the ball has hit a paddle, and 'bounces' ball off it.
 def checkHitPaddle(ball, paddle1, paddle2, ballDirX, ballDirY):
+    paddle_mid = (paddle1.top + (PADDLE_SIZE/2))/2
+    # note: this is contact point
+    ball_mid = (ball.top + (LINE_THICKNESS/2))/2
+    ballDirY = ball_mid - paddle_mid
+
     # if ball is going left and ball is on left paddle
-    if ballDirX < 0 and paddle1.right >= ball.left and paddle1.left <= ball.right and paddle1.top <= ball.top and paddle1.bottom >= ball.bottom:
-        paddle_mid = (paddle1.top + (PADDLE_SIZE/2))/2
-        # note: this is contact point
-        ball_mid = (ball.top + (LINE_THICKNESS/2))/2
-        ballDirY = ball_mid - paddle_mid
-        return (-ballDirX, ballDirY)
-
+    is_ball_left_collision = ballDirX < 0 and paddle1.right >= ball.left and paddle1.left <= ball.right and paddle1.top <= ball.top and paddle1.bottom >= ball.bottom
     # if ball is going right and ball is on right paddle
-    elif ballDirX > 0 and paddle2.left <= ball.right and paddle2.right >= ball.left and paddle2.top <= ball.top and paddle2.bottom >= ball.bottom:
-        paddle_mid = (paddle2.top + (PADDLE_SIZE/2))/2
-        # note: this is contact point
-        ball_mid = (ball.top + (LINE_THICKNESS/2))/2
-        ballDirY = ball_mid - paddle_mid
-        return (-ballDirX, ballDirY)
+    is_ball_right_collision = ballDirX > 0 and paddle2.left <= ball.right and paddle2.right >= ball.left and paddle2.top <= ball.top and paddle2.bottom >= ball.bottom
+ 
+    if is_ball_left_collision or is_ball_right_collision:
+        ballDirX = -ballDirX
 
-    else:
-        return (ballDirX, ballDirY)
+    return (ballDirX, ballDirY)
 
 def checkHitPowerup(ball, ballDirX, ballDirY, isPowerupAvailable):
     powerup_left = (WINDOW_WIDTH/2) - (POWERUP_SIZE/2)
