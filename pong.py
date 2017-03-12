@@ -42,13 +42,18 @@ def drawBall(ball):
     pygame.draw.rect(DISPLAYSURF, WHITE, ball)
 
 def drawPowerup():
+
+    if powerup[1] + POWERUP_SIZE >= WINDOW_HEIGHT or powerup[1] <= LINE_THICKNESS:
+        powerup[2] = -powerup[2]
+    powerup[1]+=powerup[2]
+
     # load img
     picture = pygame.image.load("Rasberry.png")
     picture = pygame.transform.scale(picture, (POWERUP_SIZE, POWERUP_SIZE))
     rect = picture.get_rect()
-    
+
     # center rect and draw
-    rect = rect.move((WINDOW_WIDTH/2 - POWERUP_SIZE/2, WINDOW_HEIGHT/2 - POWERUP_SIZE/2))
+    rect = rect.move((powerup[0], powerup[1]))
     DISPLAYSURF.blit(picture, rect)
 
 #moves the ball returns new position
@@ -102,9 +107,9 @@ def checkHitPaddle(ball, paddle1, paddle2, ballDirX, ballDirY):
         return (ballDirX, ballDirY)
 
 def checkHitPowerup(ball, ballDirX, ballDirY, isPowerupAvailable):
-    powerup_left = (WINDOW_WIDTH/2) - (POWERUP_SIZE/2)
+    powerup_left = powerup[0]
     powerup_right = powerup_left + POWERUP_SIZE
-    powerup_top = (WINDOW_HEIGHT/2) - (POWERUP_SIZE/2)
+    powerup_top = powerup[1]
     powerup_bottom = powerup_top + POWERUP_SIZE
 
     # If powerup is available and the ball hits it
@@ -171,8 +176,14 @@ def main():
 
     pygame.init()
     global DISPLAYSURF
-    ## Font information
+    # Font information
     global BASICFONT, BASICFONTSIZE
+
+    # global object that has powerup position
+    global powerup
+    # Note: powerup[0] == powerup.x, powerup[1] == powerup.y, powerup[2] == direction
+    powerup = [WINDOW_WIDTH/2 - POWERUP_SIZE/2, WINDOW_HEIGHT/2 - POWERUP_SIZE/2, 5]
+
     BASICFONTSIZE = 20
     BASICFONT = pygame.font.Font('freesansbold.ttf', BASICFONTSIZE)
 
@@ -182,8 +193,8 @@ def main():
 
     # Initiate variable and set starting positions
     # any future changes made within rectangles
-    ballX = WINDOW_WIDTH/2 - LINE_THICKNESS*7
-    ballY = WINDOW_HEIGHT/2 - LINE_THICKNESS/2
+    ballX = WINDOW_WIDTH/2 - POWERUP_SIZE
+    ballY = WINDOW_HEIGHT/2
     playerOnePosition = (WINDOW_HEIGHT - PADDLE_SIZE) /2
     playerTwoPosition = (WINDOW_HEIGHT - PADDLE_SIZE) /2
     score = 0
@@ -222,9 +233,10 @@ def main():
                 paddle1.y = mousey
             elif pressed[pygame.K_SPACE]:
                 isGameOver = False
-                ball.x = WINDOW_WIDTH/2 - LINE_THICKNESS*7
-                ball.y = WINDOW_HEIGHT/2 - LINE_THICKNESS/2
+                ball.x = WINDOW_WIDTH/2 - POWERUP_SIZE
+                ball.y = WINDOW_HEIGHT/2
                 score = 0
+                isPowerupAvailable = True
 
         if not isGameOver:
             drawArena()
