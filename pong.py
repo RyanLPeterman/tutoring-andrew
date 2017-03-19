@@ -3,9 +3,10 @@ from pygame.locals import *
 from time import sleep
 
 # Number of frames per second
-FPS = 30
+FPS = 300
 
 #Global Variables to be used through our program
+
 WINDOW_WIDTH = 1080
 WINDOW_HEIGHT = 720
 LINE_THICKNESS = 10
@@ -181,6 +182,8 @@ def main():
 
     # global object that has powerup position
     global powerup
+    
+
     # Note: powerup[0] == powerup.x, powerup[1] == powerup.y, powerup[2] == direction
     powerup = [WINDOW_WIDTH/2 - POWERUP_SIZE/2, WINDOW_HEIGHT/2 - POWERUP_SIZE/2, 5]
 
@@ -199,9 +202,10 @@ def main():
     playerTwoPosition = (WINDOW_HEIGHT - PADDLE_SIZE) /2
     score = 0
 
+
     # sign = direction, magnitude = speed
     ballDirX = -10 ## -1 = left 1 = right
-    ballDirY = -5 ## -1 = up 1 = down
+    ballDirY = 0 ## -1 = up 1 = down
 
     # Creates Rectangles for ball and paddles.
     paddle1 = pygame.Rect(PADDLE_OFFSET, playerOnePosition, LINE_THICKNESS,PADDLE_SIZE)
@@ -218,6 +222,9 @@ def main():
 
     isPowerupAvailable = True
     isGameOver = False
+    last_x_ball_dir = ballDirX
+    #how many hits after powerup was consumed
+    hits_after_powerup = 0
 
     while True:
         for event in pygame.event.get():
@@ -231,12 +238,17 @@ def main():
             elif event.type == MOUSEMOTION:
                 mousex, mousey = event.pos
                 paddle1.y = mousey
+
+            # if space pressed
             elif pressed[pygame.K_SPACE]:
+                # reset the game
                 isGameOver = False
                 ball.x = WINDOW_WIDTH/2 - POWERUP_SIZE
                 ball.y = WINDOW_HEIGHT/2
                 score = 0
                 isPowerupAvailable = True
+                ballDirX = -10
+                ballDirY = 0 
 
         if not isGameOver:
             drawArena()
@@ -246,6 +258,20 @@ def main():
 
             if isPowerupAvailable:
                 drawPowerup()
+
+            # if powerup not available and hit paddle
+            elif last_x_ball_dir != ballDirX:
+                hits_after_powerup  = hits_after_powerup + 1
+
+                if hits_after_powerup==5: 
+                    isPowerupAvailable=True
+                    ballDirX=ballDirX/2
+                    ballDirY=ballDirY/2
+                    hits_after_powerup = 0
+
+
+            # save last x direction before change
+            last_x_ball_dir = ballDirX
 
             ball = moveBall(ball, ballDirX, ballDirY)
             ballDirX, ballDirY, isGameOver = checkHitWall(ball, ballDirX, ballDirY)
