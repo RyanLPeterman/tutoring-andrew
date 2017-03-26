@@ -1,0 +1,11 @@
+To find local ipaddress
+ipconfig getifaddr en1
+
+To list all local ipaddress (interface for this computer is en1)
+sudo arp-scan --localnet --interface=en1
+
+ifconfig - to get ip
+
+To connect to another computer:
+	Enable sharing using remote login to true
+	Then ssh Artemis2@ipadress
